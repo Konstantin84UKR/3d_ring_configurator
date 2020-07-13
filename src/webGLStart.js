@@ -18,7 +18,6 @@ import { loadTextureSetMaterial } from './settingLoadTex.js';
 import { loadModelSet } from './settingLoadTex.js';
 import { loadModelDekor } from './settingLoadTex.js';
 
-import { myGUI } from './guiSetting.js';
 
 export default class webGLStart {
 

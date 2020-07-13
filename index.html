@@ -7,27 +7,6 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document 1 </title>
     <link rel="stylesheet" href="css/style.css">
-    <script id="vertex_shader" type="x-shader/x-vertex">
-
-        attribute vec2 a_Position;
-        attribute vec3 a_Color;
-        varying vec3 v_Color;
-        void main() {
-        v_Color = a_Color;
-        gl_Position = vec4(a_Position,0.0,1.0);
-        }
-
-    </script>
-    <script id="fragment_shader" type="x-shader/x-fragment">
-
-        precision mediump float;
-        uniform vec4 u_FragColor;
-        varying vec3 v_Color;
-        void main() {
-        gl_FragColor = vec4(0.9,0.5,0.0,1.0);
-        }
-
-    </script>
 </head>
 
 <body>
