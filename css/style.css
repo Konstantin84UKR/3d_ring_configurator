@@ -1,0 +1,73 @@
+.container{
+    margin-left: 20%;
+    margin-right: 20%;
+    /* text-align: center; */ 
+     /* background: rebeccapurple; */
+
+}
+.container h1.text-center{
+    text-align: center;
+    font-family: Geneva, Arial, Helvetica, sans-serif;
+}
+.container h2.text-center{
+   text-align: center;
+   font-family: Geneva, Arial, Helvetica, sans-serif;
+}
+
+
+.select{
+    font-size: 100%;
+    width: 80%; 
+    margin: 2px; 
+    font-family: Geneva, Arial, Helvetica, sans-serif;
+}
+body {
+    background-color: rgb(255, 255, 255);
+  }
+    
+  .text {
+    cursor: pointer;
+    font-size: 2rem;
+    margin-left: 10px;
+    font-family: Geneva, Arial, Helvetica, sans-serif;
+    color: #fff;
+    font-weight: 600;
+  }
+  
+  
+  .container2{
+    margin-left: 10%;
+    margin-right: 10%;
+    /* text-align: center; */ 
+     /* background: rebeccapurple; */
+     display:  flex;
+
+}
+
+  .item {
+    background-color: rgb(240, 240, 240);
+    border: solid gray 1px;
+    margin: 5px ;
+    text-align: center ;
+    justify-content:  center;
+    height: 500px;
+    width: 500px;
+    font-family: Geneva, Arial, Helvetica, sans-serif;
+   
+  }
+  .item2{
+    background-color:  rgb(240, 240, 240);
+    border: solid gray 1px;
+    margin: 5px ;
+    text-align: left ;
+    height: 500px;
+    width: 320px;
+    font-family: Geneva, Arial, Helvetica, sans-serif;
+      
+  }
+  .selectRender{
+    background-color: rgb(176, 176, 250);
+    margin: 15px;
+    text-align: left ;
+    font-family: Geneva, Arial, Helvetica, sans-serif;
+  }

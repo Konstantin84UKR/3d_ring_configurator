@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document 1 </title>
+    <link rel="stylesheet" href="css/style.css">
+    <script id="vertex_shader" type="x-shader/x-vertex">
+
+        attribute vec2 a_Position;
+        attribute vec3 a_Color;
+        varying vec3 v_Color;
+        void main() {
+        v_Color = a_Color;
+        gl_Position = vec4(a_Position,0.0,1.0);
+        }
+
+    </script>
+    <script id="fragment_shader" type="x-shader/x-fragment">
+
+        precision mediump float;
+        uniform vec4 u_FragColor;
+        varying vec3 v_Color;
+        void main() {
+        gl_FragColor = vec4(0.9,0.5,0.0,1.0);
+        }
+
+    </script>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1 class=" text-center">3D Конфигуратор </h1>
+        <h2 class="text-center">Тестовый вариант <br>Номер 1</h2>
+        <hr>
+        <br>
+        <div class='container2'>
+
+            <div class="item">
+
+                <canvas id="canvas_1" width="500" height="500"></canvas>
+
+            </div>
+
+            <div class="item2" style="width:300x;">
+
+                <label class="select">Вид кольца</label>
+                <select class="select" id="select_ring">
+                    <option value="ring_1">ring_1</option>
+                    <option value="ring_2">ring_2</option>
+                    <option value="ring_3">ring_3</option>
+                </select>
+                <br>
+
+                <label class="select">Декор</label>
+                <select class="select" id="dekor">
+                    <option value="none">none</option>
+                    <option value="dekor_1">dekor_1</option>
+                    <option value="gemstone">gemstone</option>
+                </select>
+                <br>
+                <label class="select">skyBox</label>
+                <select class="select" id="skybox">
+                    <option value="desert">desert</option>
+                    <option value="apartment">apartment</option>
+                    <option value="tokio">tokio</option>
+                </select>
+                <br>
+                <label class="select"><input type="checkbox" id="skyBoxBlur" checked /> skyBox blur</label>
+                <br>
+                <br>
+
+                <label class="select"><input type="radio" checked name="material" value="gold" /> gold</label>
+                <br>
+                <label class="select"><input type="radio" name="material" value="plastic" /> plastic</label>
+                <br>
+                <label class="select"><input type="radio" name="material" value="metal" /> metal</label>
+                <br>
+                <label class="select"><input type="radio" name="material" value="wood" /> wood</label>
+                <br>
+                <label class="select"><input type="radio" name="material" value="rust_1" /> rust_1</label>
+                <br>
+                <label class="select"><input type="radio" name="material" value="rust_2" /> rust_2</label>
+
+                <br>
+
+            </div>
+
+        </div>
+        <script src='./index.js' type='module'></script>
+
+</body>
+
+</html>
