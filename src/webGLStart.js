@@ -1,5 +1,7 @@
 import * as Matrix from './gl-matrix.js';
 import MouseController from './MouseController.js';
+import Camera from './Camera.js';
+import { CameraController } from './Camera.js';
 import { getShader } from './ShaderUtil.js';
 import { getProgram } from './ShaderUtil.js';
 import { createDomShaderProgram } from './ShaderUtil.js';
@@ -39,6 +41,8 @@ export default class webGLStart {
         this.canvas.height = 500;
 
         this.InputController = new MouseController(this.gl);
+        this.camera = new Camera(this.gl, 1);
+        this.cameraController = new CameraController(this.gl, this.camera);
 
     }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -160,6 +164,7 @@ export default class webGLStart {
         this.PROJMATRIX = glMatrix.mat4.create();
         glMatrix.mat4.identity(this.PROJMATRIX);
         let fovy = 40 * Math.PI / 180;
+
         glMatrix.mat4.perspective(this.PROJMATRIX, fovy, this.canvas.width / this.canvas.height, 1, 50);
 
         this.MODELMATRIX = glMatrix.mat4.create();
@@ -224,10 +229,10 @@ export default class webGLStart {
             thisRL.gl.bindBuffer(thisRL.gl.ARRAY_BUFFER, thisRL.ModelSkyBox.TRIANGLE_VERTEX);
             thisRL.gl.vertexAttribPointer(thisRL.a_Position_SB, 2, thisRL.gl.FLOAT, false, 0, 0);
 
-            glMatrix.mat4.identity(thisRL.VIEWMATRIX);
+            //glMatrix.mat4.identity(thisRL.VIEWMATRIX);
             let v = [Math.cos(time * .0001), 0, Math.sin(time * .0001)];
             // rotate = rotate + .001;
-            glMatrix.mat4.identity(thisRL.VIEWMATRIX);
+            //glMatrix.mat4.identity(thisRL.VIEWMATRIX);
 
             glMatrix.mat4.identity(thisRL.VIEWMATRIX_CAMERA);
             // glMatrix.mat4.rotateY(VIEWMATRIX_CAMERA, VIEWMATRIX_CAMERA, -rotate);
@@ -237,6 +242,9 @@ export default class webGLStart {
 
             glMatrix.vec3.transformMat4(worldCameraPosition, worldCameraPosition, thisRL.VIEWMATRIX_CAMERA);
             glMatrix.vec3.normalize(worldCameraPosition, worldCameraPosition);
+
+            //this.camera.vMatrix;
+
 
             glMatrix.mat4.lookAt(thisRL.VIEWMATRIX, worldCameraPosition, [0.0, 0.0, 0.0], [0.0, 1.0, 0.0]);
 
@@ -253,12 +261,12 @@ export default class webGLStart {
             thisRL.InputController.theta += thisRL.InputController.dX, thisRL.InputController.phi += thisRL.InputController.dY;
             Z = Z + thisRL.InputController.dZ; if (Z < 1.0) { Z = 1.0 };
             //--------------------------- VIEWMATRIX -------------------------------------------//
-            glMatrix.mat4.identity(thisRL.VIEWMATRIX);
+            // glMatrix.mat4.identity(thisRL.VIEWMATRIX);
             //glMatrix.mat4.lookAt(thisRL.VIEWMATRIX, [thisRL.gui.view_directionX, thisRL.gui.view_directionY, thisRL.gui.view_directionZ], [0.0, 1.0, 0.0], [0.0, 1.0, 0.0]);
-            glMatrix.mat4.lookAt(thisRL.VIEWMATRIX, [0, 3, 3], [0.0, 1.0, 0.0], [0.0, 1.0, 0.0]);
+            //glMatrix.mat4.lookAt(thisRL.VIEWMATRIX, [0, 3, 3], [0.0, 1.0, 0.0], [0.0, 1.0, 0.0]);
             //----------------- NORMALMATRIX_HELPER --------------------------------------------//
             glMatrix.mat4.identity(thisRL.NORMALMATRIX_HELPER);
-            glMatrix.mat4.scale(thisRL.NORMALMATRIX_HELPER, thisRL.NORMALMATRIX_HELPER, [1.0, Z, 1.0]);
+            // glMatrix.mat4.scale(thisRL.NORMALMATRIX_HELPER, thisRL.NORMALMATRIX_HELPER, [1.0, Z, 1.0]);
             glMatrix.mat4.invert(thisRL.NORMALMATRIX_HELPER, thisRL.NORMALMATRIX_HELPER);
             glMatrix.mat4.transpose(thisRL.NORMALMATRIX_HELPER, thisRL.NORMALMATRIX_HELPER);
             //----------------- MODELMATRIX  ---------------------------------------------------//
@@ -271,7 +279,7 @@ export default class webGLStart {
             glMatrix.mat4.rotateX(thisRL.MODELMATRIX, thisRL.MODELMATRIX, thisRL.InputController.phi);
             glMatrix.mat4.rotateY(thisRL.MODELMATRIX, thisRL.MODELMATRIX, thisRL.InputController.theta);
             glMatrix.mat4.rotateY(thisRL.MODELMATRIX, thisRL.MODELMATRIX, x);
-            glMatrix.mat4.scale(thisRL.MODELMATRIX, thisRL.MODELMATRIX, [1.0, Z, 1.0]);
+            //glMatrix.mat4.scale(thisRL.MODELMATRIX, thisRL.MODELMATRIX, [1.0, Z, 1.0]);
             //----------------- NORMALMATRIX_REAL ----------------------------------------------//
             glMatrix.mat4.invert(thisRL.NORMALMATRIX, thisRL.MODELMATRIX);
             glMatrix.mat4.transpose(thisRL.NORMALMATRIX, thisRL.NORMALMATRIX);
@@ -289,9 +297,10 @@ export default class webGLStart {
             thisRL.gl.enableVertexAttribArray(thisRL.a_tangent);
             thisRL.gl.enableVertexAttribArray(thisRL.a_bitangent);
 
-            thisRL.gl.uniformMatrix4fv(thisRL.u_Pmatrix, false, thisRL.PROJMATRIX);
+            //thisRL.gl.uniformMatrix4fv(thisRL.u_Pmatrix, false, thisRL.PROJMATRIX);
+            thisRL.gl.uniformMatrix4fv(thisRL.u_Pmatrix, false, thisRL.camera.pMatrix);
             thisRL.gl.uniformMatrix4fv(thisRL.u_Mmatrix, false, thisRL.MODELMATRIX);
-            thisRL.gl.uniformMatrix4fv(thisRL.u_Vmatrix, false, thisRL.VIEWMATRIX);
+            thisRL.gl.uniformMatrix4fv(thisRL.u_Vmatrix, false, thisRL.camera.vMatrix);
             thisRL.gl.uniformMatrix4fv(thisRL.u_Nmatrix, false, thisRL.NORMALMATRIX);
 
             // const diffuse = (thisRL.gui.diffuse == true) ? 1.0 : 0.0;
@@ -317,18 +326,16 @@ export default class webGLStart {
             //thisRL.gl.uniform1f(thisRL.u_ao, thisRL.gui.ao);
             thisRL.gl.uniform1f(thisRL.u_ao, 1);
             //-------------------------- CAMERA ----------------------------------------------//  
-            let camera = glMatrix.vec3.create();
-            //glMatrix.vec3.set(camera, thisRL.gui.view_directionX, thisRL.gui.view_directionY, thisRL.gui.view_directionZ);
-            glMatrix.vec3.set(camera, 0, 3, 3);
-            thisRL.gl.uniform3fv(thisRL.u_Camera, camera);
+            thisRL.gl.uniform3fv(thisRL.u_Camera, thisRL.camera.eye);
             //----------------------------------------------------------------------------------//
 
-            glMatrix.mat4.identity(thisRL.VIEWMATRIX_CAMERA);
-            let view_direction = glMatrix.vec3.create();
+            // glMatrix.mat4.identity(thisRL.VIEWMATRIX_CAMERA);
+            //let view_direction = glMatrix.vec3.create();
             //glMatrix.vec3.set(view_direction, thisRL.gui.view_directionX, thisRL.gui.view_directionY, thisRL.gui.view_directionZ);
-            glMatrix.vec3.set(view_direction, 0, 3, 3);
-            glMatrix.vec3.transformMat4(view_direction, view_direction, thisRL.VIEWMATRIX_CAMERA);
-            thisRL.gl.uniform3fv(thisRL.u_view_direction, view_direction);
+            //glMatrix.vec3.set(view_direction, 0, 3, 3);
+            //glMatrix.vec3.transformMat4(view_direction, view_direction, thisRL.VIEWMATRIX_CAMERA);
+            // thisRL.gl.uniform3fv(thisRL.u_view_direction, view_direction);
+            thisRL.gl.uniform3fv(thisRL.u_view_direction, thisRL.camera.center);
 
             if (thisRL.material != thisRL.InputController.material) {
                 thisRL.textureMaterial = loadTextureSetMaterial(thisRL.gl, thisRL.InputController.material);
