@@ -29,8 +29,8 @@ export default class webGLStart {
         this.gl = this.canvas.getContext('webgl', { alpha: false, antialias: false });
 
         try {
-            this.gl.getExtension('OES_standard_derivatives');
-            this.gl.getExtension('EXT_shader_texture_lod');
+            // this.gl.getExtension('OES_standard_derivatives');
+            // this.gl.getExtension('EXT_shader_texture_lod');
         } catch (e) {
             alert("You are not webgl compatible :(");
             //return false;
@@ -49,69 +49,35 @@ export default class webGLStart {
 
         //  SKY_BOX shaderProgram ---------------------------------------------------------------//
         this.shader_SkyBox = new Shader();
-        //shader_SkyBox.createPromiseShaderProgram(this.gl, 'resource/shaders/vertex_shader_sky_box.glsl', 'resource/shaders/fragment_shader_sky_box.glsl');
-        //this.shaderProgram_SkyBox = shader_SkyBox.shaderProgram;
+
         this.shader_SkyBox.shaderProgram = await createPromiseShaderProgram(this.gl, 'resource/shaders/vertex_shader_sky_box.glsl', 'resource/shaders/fragment_shader_sky_box.glsl');
 
-        this.u_viewDirectionProjectionInverse_SB = this.gl.getUniformLocation(this.shader_SkyBox.shaderProgram, 'u_viewDirectionProjectionInverse');
-
-        this.a_Position_SB = this.gl.getAttribLocation(this.shader_SkyBox.shaderProgram, 'a_Position');
-        this.u_sampler_SB = this.gl.getUniformLocation(this.shader_SkyBox.shaderProgram, 'samplerTex');
+        this.shader_SkyBox.getAttribLocation(this.gl);
+        this.shader_SkyBox.getUniformLocation(this.gl);
 
         this.gl.useProgram(this.shader_SkyBox.shaderProgram);
-
-        this.gl.uniform1i(this.u_sampler_SB, 4);
+        this.gl.uniform1i(this.shader_SkyBox.samplerTex, 4);
         this.gl.useProgram(null);
 
         //  MAIN shaderProgram ---------------------------------------------------------------//
-        this.shaderProgram = await createPromiseShaderProgram(this.gl, 'resource/shaders/vertex_shaderPBR.glsl', 'resource/shaders/fragment_shaderPBR.glsl');
+        this.shader_Model = new Shader();
+        this.shader_Model.shaderProgram = await createPromiseShaderProgram(this.gl, 'resource/shaders/vertex_shaderPBR.glsl', 'resource/shaders/fragment_shaderPBR.glsl');
 
-        this.u_Pmatrix = this.gl.getUniformLocation(this.shaderProgram, 'u_Pmatrix');
-        this.u_Mmatrix = this.gl.getUniformLocation(this.shaderProgram, 'u_Mmatrix');
-        this.u_Vmatrix = this.gl.getUniformLocation(this.shaderProgram, 'u_Vmatrix');
-        this.u_Nmatrix = this.gl.getUniformLocation(this.shaderProgram, 'u_Nmatrix');
-        this.u_source_direction = this.gl.getUniformLocation(this.shaderProgram, 'u_source_direction');
-        this.u_view_direction = this.gl.getUniformLocation(this.shaderProgram, 'u_view_direction');
-        this.u_shininess = this.gl.getUniformLocation(this.shaderProgram, 'u_shininess');
+        this.shaderProgram = this.shader_Model.shaderProgram;
+        this.shader_Model.getAttribLocation(this.gl);
+        this.shader_Model.getUniformLocation(this.gl);
 
-        this.u_Camera = this.gl.getUniformLocation(this.shaderProgram, 'u_Camera');
+        this.gl.useProgram(this.shader_Model.shaderProgram);
 
-        this.a_Position = this.gl.getAttribLocation(this.shaderProgram, 'a_Position');
-        this.a_uv = this.gl.getAttribLocation(this.shaderProgram, 'a_uv');
-        this.a_normal = this.gl.getAttribLocation(this.shaderProgram, 'a_normal');
-        this.a_tangent = this.gl.getAttribLocation(this.shaderProgram, 'a_tangent');
-        this.a_bitangent = this.gl.getAttribLocation(this.shaderProgram, 'a_bitangent');
+        this.gl.uniform1i(this.shader_Model.u_sampler, 0);
+        this.gl.uniform1i(this.shader_Model.u_samplerNormalMap, 1);
+        this.gl.uniform1i(this.shader_Model.u_samplerRoughnessMap, 2);
+        this.gl.uniform1i(this.shader_Model.u_samplerMetallicMap, 3);
+        this.gl.uniform1i(this.shader_Model.u_irradianceMap, 4);
+        this.gl.uniform1i(this.shader_Model.u_sampler_LUT, 5);
+        this.gl.uniform1i(this.shader_Model.u_skyBox, 6);
+        this.gl.uniform1i(this.shader_Model.u_samplerAOMap, 7);
 
-        this.u_sampler = this.gl.getUniformLocation(this.shaderProgram, 'samplerTex');
-        this.u_samplerNormalMap = this.gl.getUniformLocation(this.shaderProgram, 'samplerNormalMap');
-        this.u_samplerRoughnessMap = this.gl.getUniformLocation(this.shaderProgram, 'samplerRoughnessMap');
-        this.u_samplerMetallicMap = this.gl.getUniformLocation(this.shaderProgram, 'samplerMetallicMap');
-
-        this.u_irradianceMap = this.gl.getUniformLocation(this.shaderProgram, 'u_irradianceMap');
-        this.u_sampler_LUT = this.gl.getUniformLocation(this.shaderProgram, 'u_sampler_LUT');
-        this.u_skyBox = this.gl.getUniformLocation(this.shaderProgram, 'u_skyBox');
-        this.u_samplerAOMap = this.gl.getUniformLocation(this.shaderProgram, 'samplerAOMap');
-
-        this.u_diffuse = this.gl.getUniformLocation(this.shaderProgram, 'u_diffuse');
-        this.u_normalPower = this.gl.getUniformLocation(this.shaderProgram, 'u_normalPower');
-
-
-        this.u_albedo = this.gl.getUniformLocation(this.shaderProgram, 'u_albedo');
-        this.u_metallic = this.gl.getUniformLocation(this.shaderProgram, 'u_metallic');
-        this.u_roughness = this.gl.getUniformLocation(this.shaderProgram, 'u_roughness');
-        this.u_ao = this.gl.getUniformLocation(this.shaderProgram, 'u_ao');
-
-
-        this.gl.useProgram(this.shaderProgram);
-
-        this.gl.uniform1i(this.u_sampler, 0);
-        this.gl.uniform1i(this.u_samplerNormalMap, 1);
-        this.gl.uniform1i(this.u_samplerRoughnessMap, 2);
-        this.gl.uniform1i(this.u_samplerMetallicMap, 3);
-        this.gl.uniform1i(this.u_irradianceMap, 4);
-        this.gl.uniform1i(this.u_sampler_LUT, 5);
-        this.gl.uniform1i(this.u_skyBox, 6);
-        this.gl.uniform1i(this.u_samplerAOMap, 7);
 
         loadJSON(this.gl, 'resource/ring.json');
 
@@ -208,7 +174,7 @@ export default class webGLStart {
             thisRL.gl.clear(thisRL.gl.COLOR_BUFFER_BIT | thisRL.gl.DEPTH_BUFFER_BIT);
 
             thisRL.gl.useProgram(thisRL.shader_SkyBox.shaderProgram);
-            thisRL.gl.enableVertexAttribArray(thisRL.a_Position_SB);
+            thisRL.gl.enableVertexAttribArray(thisRL.shader_SkyBox.a_Position);
 
             if (thisRL.textureSetNumber != thisRL.InputController.skybox || skybox_blur != thisRL.InputController.skybox_blur) {
                 let textureSet = loadTextureSet(thisRL.InputController.skybox, thisRL.InputController.skybox_blur);
@@ -229,7 +195,7 @@ export default class webGLStart {
             }
 
             thisRL.gl.bindBuffer(thisRL.gl.ARRAY_BUFFER, thisRL.ModelSkyBox.TRIANGLE_VERTEX);
-            thisRL.gl.vertexAttribPointer(thisRL.a_Position_SB, 2, thisRL.gl.FLOAT, false, 0, 0);
+            thisRL.gl.vertexAttribPointer(thisRL.shader_SkyBox.a_Position, 2, thisRL.gl.FLOAT, false, 0, 0);
 
             //glMatrix.mat4.identity(thisRL.VIEWMATRIX);
             let v = [Math.cos(time * .0001), 0, Math.sin(time * .0001)];
@@ -253,8 +219,8 @@ export default class webGLStart {
             glMatrix.mat4.multiply(thisRL.VIEWMATRIX, thisRL.PROJMATRIX, thisRL.VIEWMATRIX);
             glMatrix.mat4.invert(thisRL.VIEWMATRIX, thisRL.VIEWMATRIX);
 
-            thisRL.gl.uniformMatrix4fv(thisRL.u_viewDirectionProjectionInverse_SB, false, thisRL.VIEWMATRIX);
-            thisRL.gl.uniform1i(thisRL.u_sampler_SB, 4);
+            thisRL.gl.uniformMatrix4fv(thisRL.shader_SkyBox.u_viewDirectionProjectionInverse, false, thisRL.VIEWMATRIX);
+            thisRL.gl.uniform1i(thisRL.shader_SkyBox.samplerTex, 4);
             thisRL.gl.drawArrays(thisRL.gl.TRIANGLES, 0, 6);
             thisRL.gl.useProgram(null);
 
@@ -292,62 +258,47 @@ export default class webGLStart {
             // //----------------------------------------------------------------------------------//
 
 
-            thisRL.gl.useProgram(thisRL.shaderProgram);
-            thisRL.gl.enableVertexAttribArray(thisRL.a_Position);
-            thisRL.gl.enableVertexAttribArray(thisRL.a_uv);
-            thisRL.gl.enableVertexAttribArray(thisRL.a_normal);
-            thisRL.gl.enableVertexAttribArray(thisRL.a_tangent);
-            thisRL.gl.enableVertexAttribArray(thisRL.a_bitangent);
+            thisRL.gl.useProgram(thisRL.shader_Model.shaderProgram);
+            thisRL.gl.enableVertexAttribArray(thisRL.shader_Model.a_Position);
+            thisRL.gl.enableVertexAttribArray(thisRL.shader_Model.a_uv);
+            thisRL.gl.enableVertexAttribArray(thisRL.shader_Model.a_normal);
+            thisRL.gl.enableVertexAttribArray(thisRL.shader_Model.a_tangent);
+            thisRL.gl.enableVertexAttribArray(thisRL.shader_Model.a_bitangent);
 
             //thisRL.gl.uniformMatrix4fv(thisRL.u_Pmatrix, false, thisRL.PROJMATRIX);
-            thisRL.gl.uniformMatrix4fv(thisRL.u_Pmatrix, false, thisRL.camera.pMatrix);
-            thisRL.gl.uniformMatrix4fv(thisRL.u_Mmatrix, false, thisRL.MODELMATRIX);
-            thisRL.gl.uniformMatrix4fv(thisRL.u_Vmatrix, false, thisRL.camera.vMatrix);
-            thisRL.gl.uniformMatrix4fv(thisRL.u_Nmatrix, false, thisRL.NORMALMATRIX);
-
-            // const diffuse = (thisRL.gui.diffuse == true) ? 1.0 : 0.0;
-            // thisRL.gl.uniform1f(thisRL.u_diffuse, diffuse);
-            // thisRL.gl.uniform1f(thisRL.u_normalPower, thisRL.gui.normalPower);
-
+            thisRL.gl.uniformMatrix4fv(thisRL.shader_Model.u_Pmatrix, false, thisRL.camera.pMatrix);
+            thisRL.gl.uniformMatrix4fv(thisRL.shader_Model.u_Mmatrix, false, thisRL.MODELMATRIX);
+            thisRL.gl.uniformMatrix4fv(thisRL.shader_Model.u_Vmatrix, false, thisRL.camera.vMatrix);
+            thisRL.gl.uniformMatrix4fv(thisRL.shader_Model.u_Nmatrix, false, thisRL.NORMALMATRIX);
 
             //-------------------------- Lighting ---------------------------------------------//
             let source_direction = glMatrix.vec3.create();
             //glMatrix.vec3.set(source_direction, thisRL.gui.source_directionX, thisRL.gui.source_directionY, thisRL.gui.source_directionZ);
             glMatrix.vec3.set(source_direction, 0, 5, 5);
 
-            thisRL.gl.uniform3fv(thisRL.u_source_direction, source_direction);
+            thisRL.gl.uniform3fv(thisRL.shader_Model.u_source_direction, source_direction);
             //  thisRL.gl.uniform1f(thisRL.u_shininess, thisRL.gui.shininess);
-            thisRL.gl.uniform1f(thisRL.u_shininess, 100);
+            thisRL.gl.uniform1f(thisRL.shader_Model.u_shininess, 100);
             //----------------------------------------------------------------------------------//
             let albedo = glMatrix.vec3.create();
-            // glMatrix.vec3.set(albedo, thisRL.gui.albedo[0] / 255, thisRL.gui.albedo[1] / 255, thisRL.gui.albedo[2] / 255);
-            //console.log(gui.albedo);
-            // thisRL.gl.uniform3fv(thisRL.u_albedo, albedo);
-            // thisRL.gl.uniform1f(thisRL.u_metallic, thisRL.gui.metallic);
-            // thisRL.gl.uniform1f(thisRL.u_roughness, thisRL.gui.roughness);
-            //thisRL.gl.uniform1f(thisRL.u_ao, thisRL.gui.ao);
-            thisRL.gl.uniform1f(thisRL.u_ao, 1);
+
+            thisRL.gl.uniform1f(thisRL.shader_Model.u_ao, 1);
             //-------------------------- CAMERA ----------------------------------------------//  
-            thisRL.gl.uniform3fv(thisRL.u_Camera, thisRL.camera.eye);
+            thisRL.gl.uniform3fv(thisRL.shader_Model.u_Camera, thisRL.camera.eye);
             //----------------------------------------------------------------------------------//
 
-            // glMatrix.mat4.identity(thisRL.VIEWMATRIX_CAMERA);
-            //let view_direction = glMatrix.vec3.create();
-            //glMatrix.vec3.set(view_direction, thisRL.gui.view_directionX, thisRL.gui.view_directionY, thisRL.gui.view_directionZ);
-            //glMatrix.vec3.set(view_direction, 0, 3, 3);
-            //glMatrix.vec3.transformMat4(view_direction, view_direction, thisRL.VIEWMATRIX_CAMERA);
-            // thisRL.gl.uniform3fv(thisRL.u_view_direction, view_direction);
-            thisRL.gl.uniform3fv(thisRL.u_view_direction, thisRL.camera.center);
+
+            thisRL.gl.uniform3fv(thisRL.shader_Model.u_view_direction, thisRL.camera.center);
 
             if (thisRL.material != thisRL.InputController.material) {
                 thisRL.textureMaterial = loadTextureSetMaterial(thisRL.gl, thisRL.InputController.material);
                 thisRL.material = thisRL.InputController.material;
 
-                thisRL.tex = thisRL.textureMaterial.tex;
-                thisRL.tex_normal = thisRL.textureMaterial.tex_normal;
-                thisRL.tex_roughness = thisRL.textureMaterial.tex_roughness;
-                thisRL.tex_metallic = thisRL.textureMaterial.tex_metallic;
-                thisRL.tex_AO = thisRL.textureMaterial.tex_AO;
+                thisRL.tex = thisRL.shader_Model.textureMaterial.tex;
+                thisRL.tex_normal = thisthisRL.shader_ModelRL.textureMaterial.tex_normal;
+                thisRL.tex_roughness = thisRL.shader_Model.textureMaterial.tex_roughness;
+                thisRL.tex_metallic = thisRL.shader_Model.textureMaterial.tex_metallic;
+                thisRL.tex_AO = thisRL.shader_Model.textureMaterial.tex_AO;
             }
 
             if (thisRL.modelRing != thisRL.InputController.ring) {
@@ -399,19 +350,19 @@ export default class webGLStart {
 
 
             thisRL.gl.bindBuffer(thisRL.gl.ARRAY_BUFFER, thisRL.ModelMain.TRIANGLE_VERTEX);
-            thisRL.gl.vertexAttribPointer(thisRL.a_Position, 3, thisRL.gl.FLOAT, false, 4 * (3), 0);
+            thisRL.gl.vertexAttribPointer(thisRL.shader_Model.a_Position, 3, thisRL.gl.FLOAT, false, 4 * (3), 0);
 
             thisRL.gl.bindBuffer(thisRL.gl.ARRAY_BUFFER, thisRL.ModelMain.TRIANGLE_NORMAL);
-            thisRL.gl.vertexAttribPointer(thisRL.a_normal, 3, thisRL.gl.FLOAT, false, 4 * (3), 0);
+            thisRL.gl.vertexAttribPointer(thisRL.shader_Model.a_normal, 3, thisRL.gl.FLOAT, false, 4 * (3), 0);
 
             thisRL.gl.bindBuffer(thisRL.gl.ARRAY_BUFFER, thisRL.ModelMain.TRIANGLE_TANGENT);
-            thisRL.gl.vertexAttribPointer(thisRL.a_tangent, 3, thisRL.gl.FLOAT, false, 4 * (3), 0);
+            thisRL.gl.vertexAttribPointer(thisRL.shader_Model.a_tangent, 3, thisRL.gl.FLOAT, false, 4 * (3), 0);
 
             thisRL.gl.bindBuffer(thisRL.gl.ARRAY_BUFFER, thisRL.ModelMain.TRIANGLE_BITANGENT);
-            thisRL.gl.vertexAttribPointer(thisRL.a_bitangent, 3, thisRL.gl.FLOAT, false, 4 * (3), 0);
+            thisRL.gl.vertexAttribPointer(thisRL.shader_Model.a_bitangent, 3, thisRL.gl.FLOAT, false, 4 * (3), 0);
 
             thisRL.gl.bindBuffer(thisRL.gl.ARRAY_BUFFER, thisRL.ModelMain.TRIANGLE_UV);
-            thisRL.gl.vertexAttribPointer(thisRL.a_uv, 2, thisRL.gl.FLOAT, false, 4 * (2), 0);
+            thisRL.gl.vertexAttribPointer(thisRL.shader_Model.a_uv, 2, thisRL.gl.FLOAT, false, 4 * (2), 0);
 
             thisRL.gl.bindBuffer(thisRL.gl.ELEMENT_ARRAY_BUFFER, thisRL.ModelMain.TRIANGLE_FACES);
             thisRL.gl.drawElements(thisRL.gl.TRIANGLES, thisRL.ModelMain.ModelIndiceslength, thisRL.gl.UNSIGNED_SHORT, 0);
@@ -454,29 +405,29 @@ export default class webGLStart {
                 }
 
                 thisRL.gl.bindBuffer(thisRL.gl.ARRAY_BUFFER, thisRL.modelDekor.TRIANGLE_VERTEX);
-                thisRL.gl.vertexAttribPointer(thisRL.a_Position, 3, thisRL.gl.FLOAT, false, 4 * (3), 0);
+                thisRL.gl.vertexAttribPointer(thisRL.shader_Model.a_Position, 3, thisRL.gl.FLOAT, false, 4 * (3), 0);
 
                 thisRL.gl.bindBuffer(thisRL.gl.ARRAY_BUFFER, thisRL.modelDekor.TRIANGLE_NORMAL);
-                thisRL.gl.vertexAttribPointer(thisRL.a_normal, 3, thisRL.gl.FLOAT, false, 4 * (3), 0);
+                thisRL.gl.vertexAttribPointer(thisRL.shader_Model.a_normal, 3, thisRL.gl.FLOAT, false, 4 * (3), 0);
 
                 thisRL.gl.bindBuffer(thisRL.gl.ARRAY_BUFFER, thisRL.modelDekor.TRIANGLE_TANGENT);
-                thisRL.gl.vertexAttribPointer(thisRL.a_tangent, 3, thisRL.gl.FLOAT, false, 4 * (3), 0);
+                thisRL.gl.vertexAttribPointer(thisRL.shader_Model.a_tangent, 3, thisRL.gl.FLOAT, false, 4 * (3), 0);
 
                 thisRL.gl.bindBuffer(thisRL.gl.ARRAY_BUFFER, thisRL.modelDekor.TRIANGLE_BITANGENT);
-                thisRL.gl.vertexAttribPointer(thisRL.a_bitangent, 3, thisRL.gl.FLOAT, false, 4 * (3), 0);
+                thisRL.gl.vertexAttribPointer(thisRL.shader_Model.a_bitangent, 3, thisRL.gl.FLOAT, false, 4 * (3), 0);
 
                 thisRL.gl.bindBuffer(thisRL.gl.ARRAY_BUFFER, thisRL.modelDekor.TRIANGLE_UV);
-                thisRL.gl.vertexAttribPointer(thisRL.a_uv, 2, thisRL.gl.FLOAT, false, 4 * (2), 0);
+                thisRL.gl.vertexAttribPointer(thisRL.shader_Model.a_uv, 2, thisRL.gl.FLOAT, false, 4 * (2), 0);
 
                 thisRL.gl.bindBuffer(thisRL.gl.ELEMENT_ARRAY_BUFFER, thisRL.modelDekor.TRIANGLE_FACES);
                 thisRL.gl.drawElements(thisRL.gl.TRIANGLES, thisRL.modelDekor.ModelIndiceslength, thisRL.gl.UNSIGNED_SHORT, 0);
             }
 
-            thisRL.gl.disableVertexAttribArray(thisRL.a_Position);
-            thisRL.gl.disableVertexAttribArray(thisRL.a_uv);
-            thisRL.gl.disableVertexAttribArray(thisRL.a_normal);
-            thisRL.gl.disableVertexAttribArray(thisRL.a_tangent);
-            thisRL.gl.disableVertexAttribArray(thisRL.a_bitangent);
+            thisRL.gl.disableVertexAttribArray(thisRL.shader_Model.a_Position);
+            thisRL.gl.disableVertexAttribArray(thisRL.shader_Model.a_uv);
+            thisRL.gl.disableVertexAttribArray(thisRL.shader_Model.a_normal);
+            thisRL.gl.disableVertexAttribArray(thisRL.shader_Model.a_tangent);
+            thisRL.gl.disableVertexAttribArray(thisRL.shader_Model.a_bitangent);
 
 
             window.requestAnimationFrame(animate);

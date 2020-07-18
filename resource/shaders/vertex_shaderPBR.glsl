@@ -33,10 +33,13 @@ void main(){
     vec3 tang=normalize((u_Nmatrix*vec4(a_tangent,1.)).xyz);
     vec3 binormal=normalize((u_Nmatrix*vec4(a_bitangent,1.)).xyz);
     
-    mat3 tbnMatrix=mat3(
-        tang.x,binormal.x,norm.x,
-        tang.y,binormal.y,norm.y,
-    tang.z,binormal.z,norm.z);
+    // mat3 tbnMatrix=mat3(
+    //     tang.x,binormal.x,norm.x,
+    //     tang.y,binormal.y,norm.y,
+    // tang.z,binormal.z,norm.z);
+
+    mat3 tbnMatrix=mat3(norm,tang,binormal);
+    v_tbnMatrix= mat3(tang,binormal,norm);
     
     vec3 pos=(u_Vmatrix*u_Mmatrix*vec4(a_Position,1.)).xyz;
     vec4 lightPos_UI=vec4(u_source_direction,1.);
@@ -54,7 +57,7 @@ void main(){
     // v_LightDir_4=normalize(tbnMatrix*(lightPos_4.xyz));
     
     //v_ViewDir=tbnMatrix*normalize(-pos);
-    v_ViewDir=tbnMatrix*normalize(u_Camera);
+    //v_ViewDir=tbnMatrix*normalize(u_Camera);
     
     v_pos_World=(u_Mmatrix*vec4(a_Position,1.)).xyz;
     //v_pos_World=a_Position;

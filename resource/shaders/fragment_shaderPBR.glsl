@@ -1,5 +1,4 @@
-#extension GL_EXT_shader_texture_lod:enable
-#extension GL_OES_standard_derivatives:enable
+
 precision highp float;
 
 uniform sampler2D samplerTex;
@@ -31,6 +30,8 @@ varying vec3 v_LightDir_2;
 varying vec3 v_LightDir_3;
 varying vec3 v_LightDir_4;
 
+varying mat3 v_tbnMatrix;
+
 const vec3 source_diffuse_color=vec3(1.,1.,1.);
 const vec3 source_ambient_color=vec3(.1,.1,.1);
 const vec3 source_specular_color=vec3(.5,.5,.5);
@@ -53,17 +54,24 @@ vec3 getNormalFromMap()
   vec3 tangentNormal=normalize(vec3(colorNormal.xy*u_normalPower,colorNormal.z*1.));
   //vec3 tangentNormal=texture2D(samplerNormalMap,v_uv).xyz*2.-1.;
   
-  vec3 Q1=dFdx(v_pos_World);
-  vec3 Q2=dFdy(v_pos_World);
-  vec2 st1=dFdx(v_uv);
-  vec2 st2=dFdy(v_uv);
+  // vec3 Q1=dFdx(v_pos_World);
+  // vec3 Q2=dFdy(v_pos_World);
+  // vec2 st1=dFdx(v_uv);
+  // vec2 st2=dFdy(v_uv);
   
-  vec3 N=normalize(v_Normal_World);
-  vec3 T=normalize(Q1*st2.t-Q2*st1.t);
-  vec3 B=-normalize(cross(N,T));
-  mat3 TBN=mat3(T,B,N);
+  // vec3 N=normalize(v_Normal_World);
+  // vec3 T=normalize(Q1*st2.t-Q2*st1.t);
+  // vec3 B=-normalize(cross(N,T));
+  // mat3 TBN=mat3(T,B,N);
+
+  // vec3 colorNormal = normalize(2.0 * vec3(texture2D(samplerNormalMap,uv)) - 1.0);
+    
+   //colorNormal = normalize(vec3(colorNormal.xy * u_normalPower,colorNormal.z * 1.0));
+   vec3 Normal = normalize(v_tbnMatrix * tangentNormal);
+    
   
-  return normalize(TBN*tangentNormal);
+   //return normalize(TBN*tangentNormal);
+   return Normal;
 }
 // Normal Distribution Function - D
 //
