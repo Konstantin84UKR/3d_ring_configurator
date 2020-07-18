@@ -5,78 +5,9 @@ export default class Shader {
         this.shaderProgram = "none";
 
     }
-
-
-    async getShader(gl, id, str) {
-
-        var shader;
-        if (id == 'vs') {
-            shader = gl.createShader(gl.VERTEX_SHADER);
-
-        } else if (id == 'fs') {
-            shader = gl.createShader(gl.FRAGMENT_SHADER);
-        } else {
-            return null;
-        }
-        gl.shaderSource(shader, str);
-        gl.compileShader(shader);
-
-        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-            alert(gl.getShaderInfoLog(shader));
-            return null;
-        }
-
-        return shader;
-
-    }
-
-    async getProgram(gl, vShader, fShader) {
-
-        var shaderProgram = gl.createProgram();
-        gl.attachShader(shaderProgram, vShader);
-        gl.attachShader(shaderProgram, fShader);
-        gl.linkProgram(shaderProgram);
-        //gl.useProgram(shaderProgram);
-
-        return shaderProgram;
-
-    }
-
-    async createDomShaderProgram(gl, vectId, fragId) {
-
-        var vShaderTxt = document.getElementById(vectId).text; if (!vShaderTxt) return null;
-        var fShaderTxt = document.getElementById(fragId).text; if (!fShaderTxt) return null;
-        var vShader = this.getShader(gl, 'vs', vShaderTxt); if (!vShader) return null;
-        var fShader = this.getShader(gl, 'fs', fShaderTxt); if (!fShader) return null;
-
-        if (!fShader) { gl.deleteShader(vShader); return null; }
-
-        var shaderProgram = getProgram(gl, vShader, fShader);
-
-        return shaderProgram;
-    }
-
-    //--- Promise ---//
-    async LoadShaderTextUsingPromise(URL) {
-
-        let promise = new Promise(function (resolve, reject) {
-            let xhr = new XMLHttpRequest();
-            xhr.open('GET', URL, true);
-            xhr.onload = () => resolve(xhr.responseText);
-            xhr.onerror = () => resolve(console.log(xhr.statusText));
-            xhr.send();
-        });
-
-        return promise;
-    }
-
     async createPromiseShaderProgram(gl, URL_vs, URL_fs) {
-
-        //await createPromiseShaderProgram(gl, URL_vs, URL_fs);
-
         this.shaderProgram = await createPromiseShaderProgram(gl, URL_vs, URL_fs);
     }
-
 }
 
 export function getShader(gl, id, str) {
