@@ -2,10 +2,7 @@ import * as Matrix from './gl-matrix.js';
 import MouseController from './MouseController.js';
 import Camera from './Camera.js';
 import { CameraController } from './Camera.js';
-import { getShader } from './ShaderUtil.js';
-import { getProgram } from './ShaderUtil.js';
-import { createDomShaderProgram } from './ShaderUtil.js';
-import { LoadShaderTextUsingPromise } from './ShaderUtil.js';
+
 import { createPromiseShaderProgram } from './ShaderUtil.js';
 
 import { loadJSON } from './ModelUtil.js';
@@ -19,6 +16,8 @@ import { loadTextureSet } from './settingLoadTex.js';
 import { loadTextureSetMaterial } from './settingLoadTex.js';
 import { loadModelSet } from './settingLoadTex.js';
 import { loadModelDekor } from './settingLoadTex.js';
+
+import Shader from './ShaderUtil.js';
 
 
 export default class webGLStart {
@@ -49,14 +48,17 @@ export default class webGLStart {
     async settingRender() {
 
         //  SKY_BOX shaderProgram ---------------------------------------------------------------//
-        this.shaderProgram_SkyBox = await createPromiseShaderProgram(this.gl, 'resource/shaders/vertex_shader_sky_box.glsl', 'resource/shaders/fragment_shader_sky_box.glsl');
+        this.shader_SkyBox = new Shader();
+        //shader_SkyBox.createPromiseShaderProgram(this.gl, 'resource/shaders/vertex_shader_sky_box.glsl', 'resource/shaders/fragment_shader_sky_box.glsl');
+        //this.shaderProgram_SkyBox = shader_SkyBox.shaderProgram;
+        this.shader_SkyBox.shaderProgram = await createPromiseShaderProgram(this.gl, 'resource/shaders/vertex_shader_sky_box.glsl', 'resource/shaders/fragment_shader_sky_box.glsl');
 
-        this.u_viewDirectionProjectionInverse_SB = this.gl.getUniformLocation(this.shaderProgram_SkyBox, 'u_viewDirectionProjectionInverse');
+        this.u_viewDirectionProjectionInverse_SB = this.gl.getUniformLocation(this.shader_SkyBox.shaderProgram, 'u_viewDirectionProjectionInverse');
 
-        this.a_Position_SB = this.gl.getAttribLocation(this.shaderProgram_SkyBox, 'a_Position');
-        this.u_sampler_SB = this.gl.getUniformLocation(this.shaderProgram_SkyBox, 'samplerTex');
+        this.a_Position_SB = this.gl.getAttribLocation(this.shader_SkyBox.shaderProgram, 'a_Position');
+        this.u_sampler_SB = this.gl.getUniformLocation(this.shader_SkyBox.shaderProgram, 'samplerTex');
 
-        this.gl.useProgram(this.shaderProgram_SkyBox);
+        this.gl.useProgram(this.shader_SkyBox.shaderProgram);
 
         this.gl.uniform1i(this.u_sampler_SB, 4);
         this.gl.useProgram(null);
@@ -205,7 +207,7 @@ export default class webGLStart {
             thisRL.gl.clearColor(0.8, 0.9, 0.9, 1.0);
             thisRL.gl.clear(thisRL.gl.COLOR_BUFFER_BIT | thisRL.gl.DEPTH_BUFFER_BIT);
 
-            thisRL.gl.useProgram(thisRL.shaderProgram_SkyBox);
+            thisRL.gl.useProgram(thisRL.shader_SkyBox.shaderProgram);
             thisRL.gl.enableVertexAttribArray(thisRL.a_Position_SB);
 
             if (thisRL.textureSetNumber != thisRL.InputController.skybox || skybox_blur != thisRL.InputController.skybox_blur) {
