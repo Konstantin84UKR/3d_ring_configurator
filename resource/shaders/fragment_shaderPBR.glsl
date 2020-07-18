@@ -42,35 +42,11 @@ uniform float u_ao;
 
 float PI=3.14159265359;
 
-// vec3 lightPositions[] = {
-  //         vec3(-10.0,  10.0, 10.0),
-  //         vec3( 10.0,  10.0, 10.0),
-  //         vec3(-10.0, -10.0, 10.0),
-  //         vec3( 10.0, -10.0, 10.0),
-//     };
 vec3 getNormalFromMap()
 {
   vec3 colorNormal=normalize(2.*vec3(texture2D(samplerNormalMap,v_uv*2.))-1.);
   vec3 tangentNormal=normalize(vec3(colorNormal.xy*u_normalPower,colorNormal.z*1.));
-  //vec3 tangentNormal=texture2D(samplerNormalMap,v_uv).xyz*2.-1.;
-  
-  // vec3 Q1=dFdx(v_pos_World);
-  // vec3 Q2=dFdy(v_pos_World);
-  // vec2 st1=dFdx(v_uv);
-  // vec2 st2=dFdy(v_uv);
-  
-  // vec3 N=normalize(v_Normal_World);
-  // vec3 T=normalize(Q1*st2.t-Q2*st1.t);
-  // vec3 B=-normalize(cross(N,T));
-  // mat3 TBN=mat3(T,B,N);
-
-  // vec3 colorNormal = normalize(2.0 * vec3(texture2D(samplerNormalMap,uv)) - 1.0);
-    
-   //colorNormal = normalize(vec3(colorNormal.xy * u_normalPower,colorNormal.z * 1.0));
    vec3 Normal = normalize(v_tbnMatrix * tangentNormal);
-    
-  
-   //return normalize(TBN*tangentNormal);
    return Normal;
 }
 // Normal Distribution Function - D
@@ -143,9 +119,6 @@ void main(){
   vec3 colorNormal=normalize(2.*vec3(texture2D(samplerNormalMap,uv))-1.);
   vec3 colorMetallic=vec3(texture2D(samplerMetallicMap,uv));
   vec3 colorAO=vec3(texture2D(samplerAOMap,uv));
-  // if(colorAO.x<1.){
-    //   colorAO=vec3(u_ao);
-  // }
   
   vec3 F0=vec3(.04);
   F0=mix(F0,colorTex,colorMetallic);
@@ -153,19 +126,16 @@ void main(){
   // calculate per-light radiance
   vec3 Lo=vec3(0.);
   
-  // v_LightDir
-  //vec3 N=normalize(vec3(colorNormal.xy*u_normalPower,colorNormal.z*1.));
+  
   vec3 N=getNormalFromMap();
   vec3 L=normalize(v_LightDir_World);// TODO тут возможно нужно вычислять положение источника света в фрагментном шейдере
-  // vec3 L = normalize(v_LightDir_World ); // TODO тут возможно нужно вычислять положение источника света в фрагментном шейдере
+  
   vec3 V=normalize(v_ViewDir_World);
   vec3 H=normalize(V+L);
   float distance=length(v_LightDir_World-v_pos_World);
   float attenuation=1./(distance*distance);
   vec3 radiance=source_diffuse_color*attenuation*u_shininess;
-  // vec3 radiance=source_diffuse_color;
-  // radiance=radiance*u_shininess;
-  
+ 
   // cook-torrance brdf
   float NDF=DistributionGGX(N,H,colorRoughness.r);
   float G=GeometrySmith(N,V,L,colorRoughness.r);
@@ -182,40 +152,28 @@ void main(){
   float NdotL=max(dot(N,L),0.);
   Lo=(kD*colorTex/PI+specular)*radiance*NdotL;
   
-  // // // //////////////////////////  IBL  ////////////////////////////////////////////////////
-  // // vec3 ambient=source_ambient_color*albedo*ao;
+  //////////////////////////  IBL  ////////////////////////////////////////////////////
+  
   float MAX_REFLECTION_LOD=10.;
   vec3 R=reflect(-V,N);
   vec3 kS_IBL=fresnelSchlickRoughness(max(dot(N,V),.0),F0,colorRoughness.r);
   vec3 kD_IBL=vec3(1.)-kS_IBL;
   kD_IBL*=1.-colorMetallic;
   vec3 irradiance_IBL=vec3(0.);
-  // irradiance_IBL=textureCube(u_irradianceMap,normalize(N)).rgb;
   irradiance_IBL=textureCube(u_irradianceMap,N,colorRoughness.r*MAX_REFLECTION_LOD).rgb;
   
   vec3 diffuse_IBL=irradiance_IBL*colorTex*kD_IBL;
-  
-  //float MAX_REFLECTION_LOD=10.;
+ 
   vec3 reflectionVector=reflect(-normalize(v_ViewDir_World),normalize(N));
   vec3 prefilteredColor=textureCube(u_skyBox,reflectionVector,colorRoughness.r*MAX_REFLECTION_LOD).rgb;
   vec2 uvLUT=vec2(max(dot(N,V),.001),colorRoughness.r).rg;
   vec2 brdf=texture2D(u_sampler_LUT,uvLUT).rg;
   vec3 specular_IBL=prefilteredColor*(kS_IBL*brdf.x+brdf.y);
-  
   vec3 ambient=(specular_IBL+diffuse_IBL)*u_ao;
-  
-  /////////////////////////////////// TEST //////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////
-  //vec3 ambient=vec3(.03)*colorTex*colorAO;
-  //vec3 ambient=vec3(.01)*colorTex;
   vec3 color=ambient+Lo;
-  // color=kD_IBL;
-  // vec3 color=N;
   // Гамма корекция
   color=color/(color+vec3(1.));
   color=pow(color,vec3(1./gamma));
-  
- // color=colorNormal;
   gl_FragColor=vec4(color,1.);
   
 }

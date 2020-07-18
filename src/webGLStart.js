@@ -18,6 +18,7 @@ import { loadModelSet } from './settingLoadTex.js';
 import { loadModelDekor } from './settingLoadTex.js';
 
 import Shader from './ShaderUtil.js';
+import { Material } from './ShaderUtil.js';
 
 
 export default class webGLStart {
@@ -49,9 +50,7 @@ export default class webGLStart {
 
         //  SKY_BOX shaderProgram ---------------------------------------------------------------//
         this.shader_SkyBox = new Shader();
-
         this.shader_SkyBox.shaderProgram = await createPromiseShaderProgram(this.gl, 'resource/shaders/vertex_shader_sky_box.glsl', 'resource/shaders/fragment_shader_sky_box.glsl');
-
         this.shader_SkyBox.getAttribLocation(this.gl);
         this.shader_SkyBox.getUniformLocation(this.gl);
 
@@ -77,7 +76,7 @@ export default class webGLStart {
         this.gl.uniform1i(this.shader_Model.u_sampler_LUT, 5);
         this.gl.uniform1i(this.shader_Model.u_skyBox, 6);
         this.gl.uniform1i(this.shader_Model.u_samplerAOMap, 7);
-
+        this.gl.useProgram(null);
 
         loadJSON(this.gl, 'resource/ring.json');
 
@@ -104,29 +103,17 @@ export default class webGLStart {
 
         this.tex_LUT = get_texture(this.gl, "resource/LUT.png");
 
-        this.tex = false;
-        this.tex_normal = false;
-        this.tex_roughness = false;
-        this.tex_metallic = false;
-        this.tex_AO = false;
-
-
-        this.textureMaterial = loadTextureSetMaterial(this.gl, this.InputController.material);
-        this.textureMaterialDekor = loadTextureSetMaterial(this.gl, 'plastic');
+        let textureMaterial = loadTextureSetMaterial(this.gl, this.InputController.material);
+        let textureMaterialDekor = loadTextureSetMaterial(this.gl, 'plastic');
         this.material = this.InputController.material;
 
         // GOLD 
-        this.tex = this.textureMaterial.tex;
-        this.tex_normal = this.textureMaterial.tex_normal;
-        this.tex_roughness = this.textureMaterial.tex_roughness;
-        this.tex_metallic = this.textureMaterial.tex_metallic;
-        this.tex_AO = this.textureMaterial.tex_AO;
+        this.mainMaterial = new Material(this.InputController.material);
+        this.mainMaterial.settingTextue(textureMaterial);
+        // DEKOR
+        this.dekorMaterial = new Material('plastic');
+        this.dekorMaterial.settingTextue(textureMaterialDekor);
 
-        this.tex_dekor = this.textureMaterialDekor.tex;
-        this.tex_normal_dekor = this.textureMaterialDekor.tex_normal;
-        this.tex_roughness_dekor = this.textureMaterialDekor.tex_roughness;
-        this.tex_metallic_dekor = this.textureMaterialDekor.tex_metallic;
-        this.tex_AO_dekor = this.textureMaterialDekor.tex_AO;
 
         // ----------------------------- Create MATRIX -----------------------------------------//
         this.PROJMATRIX = glMatrix.mat4.create();
@@ -197,23 +184,14 @@ export default class webGLStart {
             thisRL.gl.bindBuffer(thisRL.gl.ARRAY_BUFFER, thisRL.ModelSkyBox.TRIANGLE_VERTEX);
             thisRL.gl.vertexAttribPointer(thisRL.shader_SkyBox.a_Position, 2, thisRL.gl.FLOAT, false, 0, 0);
 
-            //glMatrix.mat4.identity(thisRL.VIEWMATRIX);
             let v = [Math.cos(time * .0001), 0, Math.sin(time * .0001)];
-            // rotate = rotate + .001;
-            //glMatrix.mat4.identity(thisRL.VIEWMATRIX);
-
             glMatrix.mat4.identity(thisRL.VIEWMATRIX_CAMERA);
-            // glMatrix.mat4.rotateY(VIEWMATRIX_CAMERA, VIEWMATRIX_CAMERA, -rotate);
+
             let worldCameraPosition = glMatrix.vec3.create();
-            //glMatrix.vec3.set(worldCameraPosition, thisRL.gui.view_directionX, thisRL.gui.view_directionY, - thisRL.gui.view_directionZ);
             glMatrix.vec3.set(worldCameraPosition, 0, 5, - 5);
 
             glMatrix.vec3.transformMat4(worldCameraPosition, worldCameraPosition, thisRL.VIEWMATRIX_CAMERA);
             glMatrix.vec3.normalize(worldCameraPosition, worldCameraPosition);
-
-            //this.camera.vMatrix;
-
-
             glMatrix.mat4.lookAt(thisRL.VIEWMATRIX, worldCameraPosition, [0.0, 0.0, 0.0], [0.0, 1.0, 0.0]);
 
             glMatrix.mat4.multiply(thisRL.VIEWMATRIX, thisRL.PROJMATRIX, thisRL.VIEWMATRIX);
@@ -229,12 +207,8 @@ export default class webGLStart {
             thisRL.InputController.theta += thisRL.InputController.dX, thisRL.InputController.phi += thisRL.InputController.dY;
             Z = Z + thisRL.InputController.dZ; if (Z < 1.0) { Z = 1.0 };
             //--------------------------- VIEWMATRIX -------------------------------------------//
-            // glMatrix.mat4.identity(thisRL.VIEWMATRIX);
-            //glMatrix.mat4.lookAt(thisRL.VIEWMATRIX, [thisRL.gui.view_directionX, thisRL.gui.view_directionY, thisRL.gui.view_directionZ], [0.0, 1.0, 0.0], [0.0, 1.0, 0.0]);
-            //glMatrix.mat4.lookAt(thisRL.VIEWMATRIX, [0, 3, 3], [0.0, 1.0, 0.0], [0.0, 1.0, 0.0]);
             //----------------- NORMALMATRIX_HELPER --------------------------------------------//
             glMatrix.mat4.identity(thisRL.NORMALMATRIX_HELPER);
-            // glMatrix.mat4.scale(thisRL.NORMALMATRIX_HELPER, thisRL.NORMALMATRIX_HELPER, [1.0, Z, 1.0]);
             glMatrix.mat4.invert(thisRL.NORMALMATRIX_HELPER, thisRL.NORMALMATRIX_HELPER);
             glMatrix.mat4.transpose(thisRL.NORMALMATRIX_HELPER, thisRL.NORMALMATRIX_HELPER);
             //----------------- MODELMATRIX  ---------------------------------------------------//
@@ -252,11 +226,6 @@ export default class webGLStart {
             glMatrix.mat4.invert(thisRL.NORMALMATRIX, thisRL.MODELMATRIX);
             glMatrix.mat4.transpose(thisRL.NORMALMATRIX, thisRL.NORMALMATRIX);
             // //-------------------------------MAIN RENDER ---------------------------------------//
-            // // gl.viewport(0.0, 0.0, canvas.width, canvas.height);
-            // // gl.clearColor(0.1, 0.1, 0.1, 1.0);
-            // // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            // //----------------------------------------------------------------------------------//
-
 
             thisRL.gl.useProgram(thisRL.shader_Model.shaderProgram);
             thisRL.gl.enableVertexAttribArray(thisRL.shader_Model.a_Position);
@@ -265,7 +234,6 @@ export default class webGLStart {
             thisRL.gl.enableVertexAttribArray(thisRL.shader_Model.a_tangent);
             thisRL.gl.enableVertexAttribArray(thisRL.shader_Model.a_bitangent);
 
-            //thisRL.gl.uniformMatrix4fv(thisRL.u_Pmatrix, false, thisRL.PROJMATRIX);
             thisRL.gl.uniformMatrix4fv(thisRL.shader_Model.u_Pmatrix, false, thisRL.camera.pMatrix);
             thisRL.gl.uniformMatrix4fv(thisRL.shader_Model.u_Mmatrix, false, thisRL.MODELMATRIX);
             thisRL.gl.uniformMatrix4fv(thisRL.shader_Model.u_Vmatrix, false, thisRL.camera.vMatrix);
@@ -273,11 +241,10 @@ export default class webGLStart {
 
             //-------------------------- Lighting ---------------------------------------------//
             let source_direction = glMatrix.vec3.create();
-            //glMatrix.vec3.set(source_direction, thisRL.gui.source_directionX, thisRL.gui.source_directionY, thisRL.gui.source_directionZ);
+
             glMatrix.vec3.set(source_direction, 0, 5, 5);
 
             thisRL.gl.uniform3fv(thisRL.shader_Model.u_source_direction, source_direction);
-            //  thisRL.gl.uniform1f(thisRL.u_shininess, thisRL.gui.shininess);
             thisRL.gl.uniform1f(thisRL.shader_Model.u_shininess, 100);
             //----------------------------------------------------------------------------------//
             let albedo = glMatrix.vec3.create();
@@ -290,15 +257,12 @@ export default class webGLStart {
 
             thisRL.gl.uniform3fv(thisRL.shader_Model.u_view_direction, thisRL.camera.center);
 
-            if (thisRL.material != thisRL.InputController.material) {
+            if (thisRL.mainMaterial.name != thisRL.InputController.material) {
                 thisRL.textureMaterial = loadTextureSetMaterial(thisRL.gl, thisRL.InputController.material);
-                thisRL.material = thisRL.InputController.material;
 
-                thisRL.tex = thisRL.shader_Model.textureMaterial.tex;
-                thisRL.tex_normal = thisthisRL.shader_ModelRL.textureMaterial.tex_normal;
-                thisRL.tex_roughness = thisRL.shader_Model.textureMaterial.tex_roughness;
-                thisRL.tex_metallic = thisRL.shader_Model.textureMaterial.tex_metallic;
-                thisRL.tex_AO = thisRL.shader_Model.textureMaterial.tex_AO;
+                thisRL.mainMaterial.name = thisRL.InputController.material;
+                thisRL.mainMaterial.settingTextue(thisRL.textureMaterial);
+
             }
 
             if (thisRL.modelRing != thisRL.InputController.ring) {
@@ -308,28 +272,28 @@ export default class webGLStart {
                 thisRL.ModelMain = loadBuffer(thisRL.gl, thisRL.gl.model.meshes[thisRL.modelIndex], model_1);
             }
 
-            if (thisRL.modelDekorName != thisRL.InputController.dekor) {
+            if (thisRL.dekorMaterial.name != thisRL.InputController.dekor) {
                 thisRL.modelIndexDekor = loadModelDekor(thisRL.gl, thisRL.InputController.dekor);
-                thisRL.modelDekorName = thisRL.InputController.dekor;//thisRL.gui.dekor;
+                thisRL.dekorMaterial.name = thisRL.InputController.dekor;
                 let model_2;
                 thisRL.modelDekor = loadBuffer(thisRL.gl, thisRL.gl.model.meshes[thisRL.modelIndexDekor], model_2);
             }
 
-            if (thisRL.tex.webGLtexture) {
+            if (thisRL.mainMaterial.texture.tex.webGLtexture) {
                 thisRL.gl.activeTexture(thisRL.gl.TEXTURE0);
-                thisRL.gl.bindTexture(thisRL.gl.TEXTURE_2D, thisRL.tex.webGLtexture);
+                thisRL.gl.bindTexture(thisRL.gl.TEXTURE_2D, thisRL.mainMaterial.texture.tex.webGLtexture);
             }
-            if (thisRL.tex_normal.webGLtexture) {
+            if (thisRL.mainMaterial.texture.tex_normal.webGLtexture) {
                 thisRL.gl.activeTexture(thisRL.gl.TEXTURE1);
-                thisRL.gl.bindTexture(thisRL.gl.TEXTURE_2D, thisRL.tex_normal.webGLtexture);
+                thisRL.gl.bindTexture(thisRL.gl.TEXTURE_2D, thisRL.mainMaterial.texture.tex_normal.webGLtexture);
             }
-            if (thisRL.tex_roughness.webGLtexture) {
+            if (thisRL.mainMaterial.texture.tex_roughness.webGLtexture) {
                 thisRL.gl.activeTexture(thisRL.gl.TEXTURE2);
-                thisRL.gl.bindTexture(thisRL.gl.TEXTURE_2D, thisRL.tex_roughness.webGLtexture);
+                thisRL.gl.bindTexture(thisRL.gl.TEXTURE_2D, thisRL.mainMaterial.texture.tex_roughness.webGLtexture);
             }
-            if (thisRL.tex_metallic.webGLtexture) {
+            if (thisRL.mainMaterial.texture.tex_metallic.webGLtexture) {
                 thisRL.gl.activeTexture(thisRL.gl.TEXTURE3);
-                thisRL.gl.bindTexture(thisRL.gl.TEXTURE_2D, thisRL.tex_metallic.webGLtexture);
+                thisRL.gl.bindTexture(thisRL.gl.TEXTURE_2D, thisRL.mainMaterial.texture.tex_metallic.webGLtexture);
             }
             if (thisRL.tex_irradianceMap.webGLtexture) {
                 thisRL.gl.activeTexture(thisRL.gl.TEXTURE4);
@@ -343,9 +307,9 @@ export default class webGLStart {
                 thisRL.gl.activeTexture(thisRL.gl.TEXTURE6);
                 thisRL.gl.bindTexture(thisRL.gl.TEXTURE_CUBE_MAP, thisRL.tex_SkyBox.webGLtexture);
             }
-            if (thisRL.tex_AO.webGLtexture) {
+            if (thisRL.mainMaterial.texture.tex_AO.webGLtexture) {
                 thisRL.gl.activeTexture(thisRL.gl.TEXTURE7);
-                thisRL.gl.bindTexture(thisRL.gl.TEXTURE_2D, thisRL.tex_AO.webGLtexture);
+                thisRL.gl.bindTexture(thisRL.gl.TEXTURE_2D, thisRL.mainMaterial.texture.tex_AO.webGLtexture);
             }
 
 
@@ -372,35 +336,27 @@ export default class webGLStart {
             //----------------------  DEKOR ------------------------------------// 
             if (thisRL.InputController.dekor != 'none') {
                 if (thisRL.InputController.dekor == 'gemstone') {
-                    // textureMaterialDekor = loadTextureSetMaterial(gl, 'plastic');
-                    //  material = gui.material;
 
-                    thisRL.tex_dekor = thisRL.textureMaterialDekor.tex;
-                    thisRL.tex_normal_dekor = thisRL.textureMaterialDekor.tex_normal;
-                    thisRL.tex_roughness_dekor = thisRL.textureMaterialDekor.tex_roughness;
-                    thisRL.tex_metallic_dekor = thisRL.textureMaterialDekor.tex_metallic;
-                    thisRL.tex_AO_dekor = thisRL.textureMaterialDekor.tex_AO;
-
-                    if (thisRL.tex_dekor.webGLtexture) {
+                    if (thisRL.dekorMaterial.texture.tex.webGLtexture) {
                         thisRL.gl.activeTexture(thisRL.gl.TEXTURE0);
-                        thisRL.gl.bindTexture(thisRL.gl.TEXTURE_2D, thisRL.tex_dekor.webGLtexture);
+                        thisRL.gl.bindTexture(thisRL.gl.TEXTURE_2D, thisRL.dekorMaterial.texture.tex.webGLtexture);
                     }
-                    if (thisRL.tex_normal_dekor.webGLtexture) {
+                    if (thisRL.dekorMaterial.texture.tex_normal.webGLtexture) {
                         thisRL.gl.activeTexture(thisRL.gl.TEXTURE1);
-                        thisRL.gl.bindTexture(thisRL.gl.TEXTURE_2D, thisRL.tex_normal_dekor.webGLtexture);
+                        thisRL.gl.bindTexture(thisRL.gl.TEXTURE_2D, thisRL.dekorMaterial.texture.tex_normal.webGLtexture);
                     }
-                    if (thisRL.tex_roughness_dekor.webGLtexture) {
+                    if (thisRL.dekorMaterial.texture.tex_roughness.webGLtexture) {
                         thisRL.gl.activeTexture(thisRL.gl.TEXTURE2);
-                        thisRL.gl.bindTexture(thisRL.gl.TEXTURE_2D, thisRL.tex_roughness_dekor.webGLtexture);
+                        thisRL.gl.bindTexture(thisRL.gl.TEXTURE_2D, thisRL.dekorMaterial.texture.tex_roughness.webGLtexture);
                     }
-                    if (thisRL.tex_metallic_dekor.webGLtexture) {
+                    if (thisRL.dekorMaterial.texture.tex_metallic.webGLtexture) {
                         thisRL.gl.activeTexture(thisRL.gl.TEXTURE3);
-                        thisRL.gl.bindTexture(thisRL.gl.TEXTURE_2D, thisRL.tex_metallic_dekor.webGLtexture);
+                        thisRL.gl.bindTexture(thisRL.gl.TEXTURE_2D, thisRL.dekorMaterial.texture.tex_metallic.webGLtexture);
                     }
 
-                    if (thisRL.tex_AO_dekor.webGLtexture) {
+                    if (thisRL.dekorMaterial.texture.tex_AO.webGLtexture) {
                         thisRL.gl.activeTexture(thisRL.gl.TEXTURE7);
-                        thisRL.gl.bindTexture(thisRL.gl.TEXTURE_2D, thisRL.tex_AO_dekor.webGLtexture);
+                        thisRL.gl.bindTexture(thisRL.gl.TEXTURE_2D, thisRL.dekorMaterial.texture.tex_AO.webGLtexture);
                     }
                 }
 

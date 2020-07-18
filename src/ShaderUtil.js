@@ -1,8 +1,15 @@
+//import { set } from "./src/gl-matrix/vec2";
 
 export default class Shader {
     constructor(gl, URL_vs, URL_fs) {
 
         this.shaderProgram = "none";
+        this.tex = false;
+        this.tex_normal = false;
+        this.tex_roughness = false;
+        this.tex_metallic = false;
+        this.tex_AO = false;
+        this.material = [];
 
     }
     async createPromiseShaderProgram(gl, URL_vs, URL_fs) {
@@ -14,6 +21,7 @@ export default class Shader {
     }
 
     getUniformLocation(gl) {
+
         this.u_viewDirectionProjectionInverse = gl.getUniformLocation(this.shaderProgram, 'u_viewDirectionProjectionInverse');
         this.samplerTex = gl.getUniformLocation(this.shaderProgram, 'samplerTex');
 
@@ -53,7 +61,39 @@ export default class Shader {
         this.u_ao = gl.getUniformLocation(this.shaderProgram, 'u_ao');
     }
 
+    // setMaterial(index, textureMaterial) {
+
+    //     this.material[index].tex = textureMaterial.tex;
+    //     this.material[index].tex_normal = textureMaterial.tex_normal;
+    //     this.material[index].tex_roughness = textureMaterial.tex_roughness;
+    //     this.material[index].tex_metallic = textureMaterial.tex_metallic;
+    //     this.material[index].tex_AO = textureMaterial.tex_AO;
+    // }
+
 }
+
+export class Material {
+    constructor(name) {
+        this.name = name;
+        this.texture = {
+            'tex': "",
+            'tex_normal': "",
+            'tex_roughness': "",
+            'tex_metallic': "",
+            'tex_AO': ""
+        };
+
+    }
+
+    settingTextue(textureSetting) {
+        this.texture.tex = textureSetting.tex;
+        this.texture.tex_normal = textureSetting.tex_normal;
+        this.texture.tex_roughness = textureSetting.tex_roughness;
+        this.texture.tex_metallic = textureSetting.tex_metallic;
+        this.texture.tex_AO = textureSetting.tex_AO;
+    }
+}
+
 
 export function getShader(gl, id, str) {
 

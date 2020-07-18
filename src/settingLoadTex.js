@@ -105,7 +105,7 @@ export function loadTextureSetMaterial(gl, m) {
                 'tex_normal': get_texture(gl, "resource/pbr_gold/gold-scuffed_normal.png"),
                 'tex_roughness': get_texture(gl, "resource/pbr_gold/gold-scuffed_roughness.png"),
                 'tex_metallic': get_texture(gl, "resource/pbr_gold/gold-scuffed_metallic.png"),
-                'tex_AO': get_texture(gl, "resource/pbr_gold/bamboo-wood-semigloss-ao.png")
+                'tex_AO': get_texture(gl, "resource/pbr_wood_2/bamboo-wood-semigloss-ao.png")
             }
 
             break;
@@ -143,7 +143,7 @@ export function loadTextureSetMaterial(gl, m) {
                 'tex_normal': get_texture(gl, "resource/pbr_rust/rustediron-streaks_normal.png"),
                 'tex_roughness': get_texture(gl, "resource/pbr_rust/rustediron-streaks_roughness.png"),
                 'tex_metallic': get_texture(gl, "resource/pbr_rust/rustediron-streaks_metallic.png.png"),
-                'tex_AO': get_texture(gl, "resource/pbr_gold/bamboo-wood-semigloss-ao.png")
+                'tex_AO': get_texture(gl, "resource/pbr_wood_2/bamboo-wood-semigloss-ao.png")
 
 
             }
@@ -155,7 +155,7 @@ export function loadTextureSetMaterial(gl, m) {
                 'tex_normal': get_texture(gl, "resource/pbr/rustediron2_normal.png"),
                 'tex_roughness': get_texture(gl, "resource/pbr/rustediron2_roughness.png"),
                 'tex_metallic': get_texture(gl, "resource/pbr/rustediron2_metallic.png"),
-                'tex_AO': get_texture(gl, "resource/pbr_gold/bamboo-wood-semigloss-ao.png")
+                'tex_AO': get_texture(gl, "resource/pbr_wood_2/bamboo-wood-semigloss-ao.png")
             }
             break;
 
@@ -177,7 +177,7 @@ export function loadTextureSetMaterial(gl, m) {
                 'tex_normal': get_texture(gl, "resource/pbr_gold/gold-scuffed_normal.png"),
                 'tex_roughness': get_texture(gl, "resource/pbr_gold/gold-scuffed_roughness.png"),
                 'tex_metallic': get_texture(gl, "resource/pbr_gold/gold-scuffed_metallic.png"),
-                'tex_AO': get_texture(gl, "resource/pbr_gold/bamboo-wood-semigloss-ao.png")
+                'tex_AO': get_texture(gl, "resource/pbr_wood_2/bamboo-wood-semigloss-ao.png")
             }
     }
 
