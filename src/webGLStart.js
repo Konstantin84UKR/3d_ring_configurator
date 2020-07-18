@@ -64,7 +64,7 @@ export default class webGLStart {
         this.gl.useProgram(null);
 
         //  MAIN shaderProgram ---------------------------------------------------------------//
-        this.shaderProgram = await createPromiseShaderProgram(this.gl, 'resource/shaders/vertex_shaderPBR_basic_3.glsl', 'resource/shaders/fragment_shaderPBR_basic_4.glsl');
+        this.shaderProgram = await createPromiseShaderProgram(this.gl, 'resource/shaders/vertex_shaderPBR.glsl', 'resource/shaders/fragment_shaderPBR.glsl');
 
         this.u_Pmatrix = this.gl.getUniformLocation(this.shaderProgram, 'u_Pmatrix');
         this.u_Mmatrix = this.gl.getUniformLocation(this.shaderProgram, 'u_Mmatrix');
