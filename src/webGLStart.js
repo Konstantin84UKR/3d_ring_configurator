@@ -6,6 +6,7 @@ import { CameraController } from './Camera.js';
 import { createPromiseShaderProgram } from './ShaderUtil.js';
 
 import { loadJSON } from './ModelUtil.js';
+import { LoadModeltUsingPromise } from './ModelUtil.js';
 import { loadBuffer } from './ModelUtil.js';
 import { setGeometrySkyBox } from './ModelUtil.js';
 import { get_cube_texture_MIPMAP } from './ModelUtil.js';
@@ -37,8 +38,8 @@ export default class webGLStart {
             //return false;
         }
 
-        this.canvas.width = 500;
-        this.canvas.height = 500;
+        this.canvas.width = 800;
+        this.canvas.height = 800;
 
         this.InputController = new MouseController(this.gl);
         this.camera = new Camera(this.gl, 1);
@@ -77,9 +78,15 @@ export default class webGLStart {
         this.gl.uniform1i(this.shader_Model.u_skyBox, 6);
         this.gl.uniform1i(this.shader_Model.u_samplerAOMap, 7);
         this.gl.useProgram(null);
+        let XXX;
+        //loadJSON(this.gl, 'resource/ring.json', XXX);
 
-        loadJSON(this.gl, 'resource/ring.json');
-
+        await LoadModeltUsingPromise('resource/ring.json')
+            .then(function (data) {
+                XXX = data;
+                console.log(XXX);
+            });
+        this.gl.model = XXX;
         // ------------------------ LOAD BUFFER MODEL -----------------------------------------//
         let modelIndex = loadModelSet(this.gl, this.InputController.ring);
         let modelRing = this.InputController.ring;

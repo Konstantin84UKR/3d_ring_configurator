@@ -96,7 +96,7 @@ export function loadFace() {
 
 }
 
-export function loadJSON(gl, modelURL) {
+export function loadJSON(gl, modelURL, modelMesh) {
     var xhr = new XMLHttpRequest();
     var model;
 
@@ -107,9 +107,10 @@ export function loadJSON(gl, modelURL) {
             alert('LOAD' + xhr.status + ': ' + xhr.statusText);
         } else {
 
+
             gl.model = JSON.parse(xhr.responseText);
             // model = JSON.parse(xhr.responseText);
-            // return true;
+            //modelMesh = JSON.parse(xhr.responseText);
         }
     }
     xhr.send();
@@ -382,3 +383,17 @@ export function get_cube_texture(gl, textureSet) {
     tex.webGLtexture = texture;
     return tex;
 }
+
+export async function LoadModeltUsingPromise(URL) {
+
+    let promise = new Promise(function (resolve, reject) {
+        let xhr = new XMLHttpRequest();
+        xhr.open('GET', URL, false);
+        xhr.onload = () => resolve(JSON.parse(xhr.responseText));
+        xhr.onerror = () => resolve(console.log(xhr.statusText));
+        xhr.send();
+    });
+
+    return promise;
+}
+
