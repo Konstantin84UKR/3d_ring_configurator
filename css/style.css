@@ -53,12 +53,12 @@ body {
     margin: 5px ;
     text-align: center ;
     justify-content:  center;
-    height: 800px;
-    width: 800px;
+    height: 500px;
+    width: 500px;
     font-family: Geneva, Arial, Helvetica, sans-serif;
     max-height: 100%;
-    max-width: 800px;
-    min-width: 800px;
+    max-width: 500px;
+    min-width: 500px;
     height: 100%;
     display:block;
     flex-grow: 4;

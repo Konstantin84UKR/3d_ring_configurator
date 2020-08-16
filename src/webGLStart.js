@@ -38,8 +38,8 @@ export default class webGLStart {
             //return false;
         }
 
-        this.canvas.width = 800;
-        this.canvas.height = 800;
+        this.canvas.width = 500;
+        this.canvas.height = 500;
 
         this.InputController = new MouseController(this.gl);
         this.camera = new Camera(this.gl, 1);
